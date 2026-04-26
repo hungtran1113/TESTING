@@ -1,0 +1,25 @@
+{
+  "name": "healthguard",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "cucumber-js features/*.feature --require-module ts-node/register --require steps/*.ts",
+    "auth": "ts-node auth_gen.ts",
+    "runner": "node interactive_runner.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@cucumber/cucumber": "^12.8.1",
+    "dotenv": "^17.4.2"
+  }
+}

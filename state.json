@@ -1,0 +1,158 @@
+{
+  "cookies": [
+    {
+      "name": "_GRECAPTCHA",
+      "value": "09AKhCRwiMfy_V3XKBaFcIO4KGvY1hv4Ntvig9eXP-iczaxIwzSdDdoF9ifF8mHDsCQOJu33kBhYVrfDtxtHcjhVc",
+      "domain": "www.recaptcha.net",
+      "path": "/recaptcha",
+      "expires": 1792730852.502018,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "atlassian.account.ffs.id",
+      "value": "3e79165d-9d4d-43b5-8472-1367629494fa",
+      "domain": "id.atlassian.com",
+      "path": "/",
+      "expires": 1808714847.092461,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "atlassian.account.xsrf.token",
+      "value": "2e243cb3-f8a9-4901-bf8d-e84904221954",
+      "domain": "id.atlassian.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "ajs_anonymous_id",
+      "value": "%2258aac413-e47d-4d98-a91c-22425cf4a794%22",
+      "domain": ".atlassian.com",
+      "path": "/",
+      "expires": 1808714858,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__cuid",
+      "value": "d71f1b2ca8e24e24a2b546b45bbf7370",
+      "domain": ".atlassian.com",
+      "path": "/",
+      "expires": 1811738858,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__cuid",
+      "value": "d71f1b2ca8e24e24a2b546b45bbf7370",
+      "domain": ".id.atlassian.com",
+      "path": "/",
+      "expires": 1811738858,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "g_state",
+      "value": "{\"i_l\":0,\"i_ll\":1777178849357,\"i_b\":\"NXBRLOhjdgW5Nao8zNGITZDYobpgeoH9SbdFXB9U42c\",\"i_e\":{\"enable_itp_optimization\":19},\"i_et\":1777178849354}",
+      "domain": "id.atlassian.com",
+      "path": "/",
+      "expires": 1792730849,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "atlassian.account.xsrf.token",
+      "value": "bcf3f803-5f48-480b-b9a9-511f69624282",
+      "domain": "start.atlassian.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "cloud.session.token",
+      "value": "eyJraWQiOiJzZXNzaW9uLXNlcnZpY2UvcHJvZC0xNzM4Nzk0ODc0IiwiYWxnIjoiUlMyNTYifQ.eyJhc3NvY2lhdGlvbnMiOltdLCJzdWIiOiI3MTIwMjA6NmUwYTljMGYtNzMwYy00MzQ0LWJlZGQtYjU2NjMwYmQ0NDEyIiwiZW1haWxEb21haW4iOiJnbWFpbC5jb20iLCJpbXBlcnNvbmF0aW9uIjpbXSwiY3JlYXRlZCI6MTc3NzE3ODg3OSwicmVmcmVzaFRpbWVvdXQiOjE3NzcxNzk0NzksInZlcmlmaWVkIjp0cnVlLCJpc3MiOiJzZXNzaW9uLXNlcnZpY2UiLCJzZXNzaW9uSWQiOiJhYWU3MDQzYy1mOTYwLTQwMTgtOGJmMC0wMzk3ZTExZjk4NzMiLCJzdGVwVXBzIjpbXSwiYXVkIjoiYXRsYXNzaWFuIiwibmJmIjoxNzc3MTc4ODc5LCJleHAiOjE3Nzk3NzA4NzksImlhdCI6MTc3NzE3ODg3OSwiZW1haWwiOiJ0ZXN0dHQwODA1QGdtYWlsLmNvbSIsImp0aSI6ImFhZTcwNDNjLWY5NjAtNDAxOC04YmYwLTAzOTdlMTFmOTg3MyJ9.OwB80e6tfIHiAwgF1BH1F9zkXRpCz1SjjBCmKsBMBnx_E1ZW_qLoCZ23eHb-7b7ogDluwuNTBJjSBTscU1OqvIPjZMXA8k1Jk9fHh80T4C9cRILWHrws7HhiStPu-R0VNk3B_Hq-LxyVtZcPCoS0PLumoLKkyOwySYs5Rnd8NR7cPexUahzkM_zmFOFLnws6xE8PGtT-U6b2FWqhODHhAs_f1JpigGhqCvpWpEy74XyIiMzS2fR8NHO62bi8pogpBoKH7k7unctqOcer8wcNpPE-wJiY7HmLa2AEn5vVQMzoaZbfavtbg0WZnMA6QZQxd84O2VWTfQZpwm4zfL6ejQ",
+      "domain": "id.atlassian.com",
+      "path": "/",
+      "expires": 1779770856.495586,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__aid_user_id",
+      "value": "712020%3A6e0a9c0f-730c-4344-bedd-b56630bd4412",
+      "domain": ".atlassian.com",
+      "path": "/",
+      "expires": 1779770856.49588,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "cloud.session.token",
+      "value": "eyJraWQiOiJzZXNzaW9uLXNlcnZpY2UvcHJvZC0xNzM4Nzk0ODc0IiwiYWxnIjoiUlMyNTYifQ.eyJhc3NvY2lhdGlvbnMiOltdLCJzdWIiOiI3MTIwMjA6NmUwYTljMGYtNzMwYy00MzQ0LWJlZGQtYjU2NjMwYmQ0NDEyIiwiZW1haWxEb21haW4iOiJnbWFpbC5jb20iLCJpbXBlcnNvbmF0aW9uIjpbXSwiY3JlYXRlZCI6MTc3NzE3ODg3OSwicmVmcmVzaFRpbWVvdXQiOjE3NzcxNzk0NzksInZlcmlmaWVkIjp0cnVlLCJpc3MiOiJzZXNzaW9uLXNlcnZpY2UiLCJzZXNzaW9uSWQiOiJhYWU3MDQzYy1mOTYwLTQwMTgtOGJmMC0wMzk3ZTExZjk4NzMiLCJzdGVwVXBzIjpbXSwiYXVkIjoiYXRsYXNzaWFuIiwibmJmIjoxNzc3MTc4ODc5LCJleHAiOjE3Nzk3NzA4NzksImlhdCI6MTc3NzE3ODg3OSwiZW1haWwiOiJ0ZXN0dHQwODA1QGdtYWlsLmNvbSIsImp0aSI6ImFhZTcwNDNjLWY5NjAtNDAxOC04YmYwLTAzOTdlMTFmOTg3MyJ9.OwB80e6tfIHiAwgF1BH1F9zkXRpCz1SjjBCmKsBMBnx_E1ZW_qLoCZ23eHb-7b7ogDluwuNTBJjSBTscU1OqvIPjZMXA8k1Jk9fHh80T4C9cRILWHrws7HhiStPu-R0VNk3B_Hq-LxyVtZcPCoS0PLumoLKkyOwySYs5Rnd8NR7cPexUahzkM_zmFOFLnws6xE8PGtT-U6b2FWqhODHhAs_f1JpigGhqCvpWpEy74XyIiMzS2fR8NHO62bi8pogpBoKH7k7unctqOcer8wcNpPE-wJiY7HmLa2AEn5vVQMzoaZbfavtbg0WZnMA6QZQxd84O2VWTfQZpwm4zfL6ejQ",
+      "domain": "start.atlassian.com",
+      "path": "/",
+      "expires": 1779770857.002187,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://id.atlassian.com",
+      "localStorage": [
+        {
+          "name": "statsig.session_id.3569395337",
+          "value": "{\"sessionID\":\"ad62e435-81fe-453d-8849-0be50951597a\",\"startTime\":1777178848867,\"lastUpdate\":1777178859172}"
+        },
+        {
+          "name": "__cuid",
+          "value": "d71f1b2ca8e24e24a2b546b45bbf7370"
+        },
+        {
+          "name": "_grecaptcha",
+          "value": "09AKhCRwjVTy9sMzrDmOBBoAEYt0uCsWv066_c2DWSHw21UZL9Fr5aRmr-w4LhaHOfNQCslBG67ijHR4VbDyCHay2sSeJR5Om441Tq3vx2KOPUTncS3F5KuFweVolA9PmM"
+        },
+        {
+          "name": "awc.session.expiry",
+          "value": "1777180647112"
+        },
+        {
+          "name": "ajs_anonymous_id",
+          "value": "\"58aac413-e47d-4d98-a91c-22425cf4a794\""
+        },
+        {
+          "name": "awc.session.id",
+          "value": "1777178847112"
+        }
+      ]
+    },
+    {
+      "origin": "https://www.recaptcha.net",
+      "localStorage": [
+        {
+          "name": "rc::a",
+          "value": "MWc3aHFqdDFyM3RwOTE="
+        },
+        {
+          "name": "rc::f",
+          "value": "0aAMIqF6vtkXOOhLdXNXyRN_nKunMjvKOpwdblrDrX7Bv7-QaCBGcDifmlgUB8O9NOvDXk8ag"
+        }
+      ]
+    }
+  ]
+}
