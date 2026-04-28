@@ -71,7 +71,7 @@ export function getDynamicProjectUrl(subPath: string = "") {
 
 After(async function () {
     console.log("\n⏳ Kịch bản hoàn tất! Đang giữ nguyên màn hình 30s để xem kết quả...");
-    await page.waitForTimeout(30000); 
+    await page.waitForTimeout(3000); 
     if (browser) {
         await browser.close();
     }

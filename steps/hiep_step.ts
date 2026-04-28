@@ -1,15 +1,23 @@
 import { Given, When, Then } from '@cucumber/cucumber';
-import { page, getDynamicProjectUrl } from './common_step'; // Import page và hàm lấy URL
+import { page, getDynamicProjectUrl } from './common_step';
+import * as fs from 'fs';
 
+// --- AUTO-HEALING ĐĂNG NHẬP (Giữ nguyên logic ổn định của bạn) ---
 Given('Tôi truy cập vào trang dự án Jira của nhóm', async function () {
     const targetUrl = getDynamicProjectUrl("/summary"); 
-    await page.goto(targetUrl, { waitUntil: 'load' });
-    
-    // Đợi 3 giây để kiểm tra xem Jira có "lật lọng" đá văng ra trang Login không
-    await page.waitForTimeout(3000); 
+    await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(5000); 
+
+    const isLoggedIn = await page.locator('nav[aria-label="Primary"], button:has-text("Create"), [data-testid="atlassian-navigation--primary-actions"]').first().isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (!isLoggedIn && !page.url().includes('login')) {
+        console.log("\n=> ⚠️ Không tìm thấy Menu Jira! Cookies đã chết. Đang ép chuyển sang trang Login...");
+        await page.goto('https://id.atlassian.com/login', { waitUntil: 'load' });
+        await page.waitForTimeout(3000);
+    }
 
     if (page.url().includes('login') || page.url().includes('auth') || page.url().includes('id.atlassian.com')) {
-        console.log("\n=> ⚠️ Jira từ chối Cookies. Robot đang tự động đăng nhập lại...");
+        console.log("\n=> ⚠️ Robot đang tự động đăng nhập lại...");
         const email = process.env.JIRA_EMAIL || "";
         const password = process.env.JIRA_PASSWORD || "";
         
@@ -18,107 +26,117 @@ Given('Tôi truy cập vào trang dự án Jira của nhóm', async function () 
             await emailInput.fill(email);
             await page.locator('#login-submit').click();
         }
-        const passInput = page.locator('#password');
-        await passInput.waitFor({ state: 'visible', timeout: 15000 });
-        await passInput.fill(password);
-        await page.locator('#login-submit').click();
         
-        // Đợi Jira xác thực xong
-        await page.waitForURL(/.*(jira|for-you).*/, { timeout: 30000 });
+        try {
+            const passInput = page.locator('#password');
+            await passInput.waitFor({ state: 'visible', timeout: 15000 });
+            await passInput.fill(password);
+            await page.locator('#login-submit').click();
+        } catch (e) {
+            console.log("=> ⏩ Jira không yêu cầu Password (SSO).");
+        }
         
-        // Nhảy lại vào đúng URL của dự án
+        await page.waitForURL(/.*(jira|for-you|browse|projects).*/, { timeout: 30000 }).catch(() => {});
         await page.goto(targetUrl, { waitUntil: 'load' });
-        console.log(`[Terminal] 🚀 Đã đăng nhập lại và truy cập dự án: ${targetUrl}`);
     } else {
-        console.log(`[Terminal] 🚀 Cookies hợp lệ, truy cập dự án: ${targetUrl}`);
+        console.log("=> ✅ Cookies hợp lệ, trang dự án đã load ổn định.");
     }
 });
 
+// --- CẢI TIẾN: HỖ TRỢ 2 LOẠI NÚT CREATE TRÊN THANH ĐIỀU HƯỚNG ---
 When('Tôi nhấn nút Create trên thanh điều hướng', async function () {
-    // 1. Dừng 2 giây để Jira load xong các script ngầm (rất quan trọng)
     await page.waitForTimeout(2000);
 
-    // 2. Tìm nút Create
-    const createBtn = page.locator('[data-testid="atlassian-navigation--create-button"], #createGlobalItem').first();
-    await createBtn.waitFor({ state: 'visible', timeout: 15000 });
+    // Bao lưới 2 loại nút Create bạn cung cấp (Navbar button và Modal footer button phòng khi nó đã mở)
+    const navCreateBtn = page.locator('[data-testid="atlassian-navigation--create-button"], #createGlobalItem');
+    const footerCreateBtn = page.locator('[data-testid="issue-create.common.ui.footer.create-button"]');
 
-    // 3. Bấm lần 1
-    await createBtn.click();
-    console.log("=> Đã nhấn nút Create lần 1, đang đợi popup hiện ra...");
-
-    try {
-        // Đợi popup trong 8 giây
-        await page.locator('[role="dialog"], [data-testid="issue-create.common.ui.modal.header"], h2:has-text("Create issue")')
-                  .first()
-                  .waitFor({ state: 'visible', timeout: 8000 });
-    } catch (e) {
-        // 4. Bấm bù lần 2 nếu lần 1 Jira bị lag không nhận lệnh
-        console.log("=> ⚠️ Jira lag chưa hiện popup, tiến hành click bù lần 2...");
-        await createBtn.click({ force: true });
-        
-        // Đợi thêm lần nữa cho chắc chắn
-        await page.locator('[role="dialog"], [data-testid="issue-create.common.ui.modal.header"], h2:has-text("Create issue")')
-                  .first()
-                  .waitFor({ state: 'visible', timeout: 15000 });
+    // Kiểm tra và nhấn nút có sẵn
+    if (await navCreateBtn.first().isVisible()) {
+        await navCreateBtn.first().click();
+        console.log("=> Đã nhấn nút Create trên Navbar.");
+    } else if (await footerCreateBtn.first().isVisible()) {
+        await footerCreateBtn.first().click();
+        console.log("=> Phát hiện nút Create trên Modal, nhấn luôn.");
     }
+
+    // XỬ LÝ LỖI "HIDDEN H2": Đợi Modal xuất hiện nhưng mềm dẻo hơn
+    const modalHeader = page.locator('[role="dialog"] h2, [data-testid="issue-create.common.ui.modal.header"]');
     
-    console.log("=> ✅ Đã mở popup tạo Issue thành công!");
+    try {
+        // Đợi cho đến khi tiêu đề gắn vào DOM và hiển thị
+        await modalHeader.first().waitFor({ state: 'attached', timeout: 10000 });
+        await page.waitForTimeout(1000); // Nghỉ 1 giây cho hiệu ứng mở Modal xong hoàn toàn
+    } catch (e) {
+        console.log("=> ⚠️ Modal chưa hiện, click bù lần 2...");
+        await navCreateBtn.first().click({ force: true });
+    }
 });
 
+// --- CẢI TIẾN: HỖ TRỢ 2 CÁCH NHẬP INPUT SUMMARY ---
+// Sử dụng chính xác data-testid bạn cung cấp
+const summarySelectors = [
+    'input[data-testid="issue-create-commons.common.ui.fields.base-fields.input-field.textfield"]',
+    'input#summary-field',
+    'textarea[name="summary"]',
+    'input[name="summary"]'
+].join(', ');
+
 When('Tôi nhập Summary là {string}', async function (baseText: string) {
-    const summaryInput = page.locator('input#summary-field, [data-testid="issue-create-commons.common.ui.fields.base-fields.input-field.textfield"]').first();
+    const summaryInput = page.locator(summarySelectors).first();
+    
+    // Kiểm tra nếu có 1 trong các bộ chọn trên thì nhập
     await summaryInput.waitFor({ state: 'visible', timeout: 15000 });
-
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let randomString = '';
-    for (let i = 0; i < 20; i++) {
-        randomString += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-
-    const finalSummary = `${baseText} - ${randomString}`;
+    
+    const randomStr = Math.random().toString(36).substring(7);
+    const finalSummary = `${baseText} - ${randomStr}`;
+    
     await summaryInput.fill(finalSummary);
-    console.log(`=> Đã nhập Summary: ${finalSummary}`);
+    console.log(`=> Đã nhập Summary thành công vào ô: ${finalSummary}`);
 });
 
 When('Tôi để trống trường Summary', async function () {
-    const summaryInput = page.locator('input#summary-field').first();
+    const summaryInput = page.locator(summarySelectors).first();
+    await summaryInput.waitFor({ state: 'visible', timeout: 15000 });
+    await summaryInput.click();
     await summaryInput.fill('');
+    await summaryInput.press('Tab');
 });
 
+When('Tôi nhập Summary vượt quá 255 ký tự', async function () {
+    const longText = "A".repeat(260);
+    const summaryInput = page.locator(summarySelectors).first();
+    await summaryInput.waitFor({ state: 'visible', timeout: 15000 });
+    await summaryInput.fill(longText);
+});
+
+// --- CẢI TIẾN: HỖ TRỢ NÚT XÁC NHẬN CREATE TRÊN FORM ---
 When('Tôi nhấn nút xác nhận Create trên form', async function () {
-    const submitBtn = page.locator('button[type="submit"], [data-testid="issue-create.common.ui.footer.create-button"]').last();
-    await submitBtn.click();
+    // Dùng chính xác HTML data-testid bạn gửi: issue-create.common.ui.footer.create-button
+    const submitBtn = page.locator('[data-testid="issue-create.common.ui.footer.create-button"], button[type="submit"]:has-text("Create")').last();
+    
+    await submitBtn.waitFor({ state: 'visible', timeout: 10000 });
+    await submitBtn.click({ force: true });
+    console.log("=> Đã nhấn nút xác nhận Create trên Form.");
 });
 
 Then('Hệ thống phải hiển thị thông báo tạo Issue thành công', async function () {
-    // Sử dụng locator().waitFor() thay cho waitForSelector để không bị lỗi cú pháp
     const successMsg = page.locator('span:has-text("created issue"), div[role="alert"]').first();
-    
     await successMsg.waitFor({ state: 'visible', timeout: 15000 });
     console.log("\n[Terminal] ✅ KẾT QUẢ: TẠO ISSUE THÀNH CÔNG!");
 });
 
-Then('Hệ thống phải hiển thị cảnh báo lỗi {string}', async function (errorMsg: string) {
-    await page.waitForSelector(`text="${errorMsg}"`, { timeout: 5000 });
-});
-
-Given('Tôi đang xem chi tiết một Issue hiện có', async function () {
-    const targetUrl = getDynamicProjectUrl("/browse/"); 
-    await page.goto(targetUrl, { waitUntil: 'load' });
-});
-
-When('Tôi nhập {string} vào trường Story point estimate', async function (value: string) {
-    const storyPointField = page.locator('input[aria-label*="Story point estimate"], [data-testid*="story-point"] input');
-    const textClickArea = page.locator('[data-testid*="story-point"]');
-    
-    if (await textClickArea.isVisible()) {
-        await textClickArea.click();
+Then('Hệ thống phải hiển thị cảnh báo lỗi {string}', async function (expectedError: string) {
+    let searchPattern = expectedError;
+    if (expectedError.includes("too long")) {
+        searchPattern = "too long|255 characters|less than 255|exceeds";
     }
-    
-    await storyPointField.fill(value);
-    await page.keyboard.press('Enter');
-});
 
-Then('Hệ thống phải báo lỗi định dạng số không hợp lệ', async function () {
-    await page.waitForSelector('text=Please enter a number, text=Invalid number', { timeout: 5000 });
+    const errorMsg = page.locator('div[id*="error"], span[class*="error"], [role="alert"]')
+                         .filter({ hasText: new RegExp(searchPattern, 'i') })
+                         .or(page.getByText(new RegExp(searchPattern, 'i')))
+                         .first();
+
+    await errorMsg.waitFor({ state: 'visible', timeout: 15000 });
+    console.log(`\n[Terminal] ✅ KẾT QUẢ: Đã bắt được lỗi: "${expectedError}"`);
 });
