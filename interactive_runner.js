@@ -12,9 +12,9 @@ function askMenu() {
     console.log("   MENU KIỂM THỬ TỰ ĐỘNG JIRA (PLAYWRIGHT) ");
     console.log("=========================================");
     console.log("1. UC01 - Tạo dự án mới (Create Project) [CÓ SUB-MENU]");
-    console.log("2. UC02 - Mời thành viên (Add People)");
+    console.log("2. UC02 - Mời thành viên (Add People)    [CÓ SUB-MENU]");
     console.log("3. UC03 - Tạo mới Issue (Create Issue)   [CÓ SUB-MENU]");
-    console.log("4. UC04 - Cập nhật Issue (Edit Issue)");
+    console.log("4. UC04 - Cập nhật Issue (Edit Issue)    [CÓ SUB-MENU]");
     console.log("5. UC05 - Tạo Sprint mới (Create Sprint)");
     console.log("6. UC06 - Viết bình luận (Add Comment)");
     console.log("7. Chạy TẤT CẢ các chức năng trên");
@@ -24,9 +24,9 @@ function askMenu() {
     rl.question("Nhập lựa chọn của bạn (0-7): ", (choice) => {
         switch (choice.trim()) {
             case "1": return askSubMenuUC01();
-            case "2": return runCucumberTest("@UC02");
+            case "2": return askSubMenuUC02(); // Đã sửa để gọi Sub-menu
             case "3": return askSubMenuUC03();
-            case "4": return runCucumberTest("@UC04");
+            case "4": return askSubMenuUC04(); // Đã sửa để gọi Sub-menu
             case "5": return runCucumberTest("@UC05");
             case "6": return runCucumberTest("@UC06");
             case "7": return runCucumberTest("ALL");
@@ -72,6 +72,36 @@ function askSubMenuUC01() {
     });
 }
 
+// HÀM HIỂN THỊ MENU CON CHO UC02 (MỚI THÊM)
+function askSubMenuUC02() {
+    console.log("\n=============================================");
+    console.log("   SUB-MENU: CHỨC NĂNG THÊM THÀNH VIÊN (UC02)");
+    console.log("=============================================");
+    console.log(" 1. [Success] Cấp quyền cho thành viên hợp lệ (TC01)");
+    console.log(" 2. [Fail] Báo lỗi khi email sai định dạng (TC02)");
+    console.log(" 3. [Fail] Báo lỗi khi để trống ô email (TC03)");
+    console.log(" 4. [Logic] Hiển thị gợi ý email đã tồn tại (TC04)");
+    console.log(" 5. [Cancel] Hủy bỏ thao tác thêm thành viên (TC05)");
+    console.log(" 0. Quay lại menu chính");
+    console.log("---------------------------------------------");
+
+    rl.question("Nhập test case bạn muốn chạy (0-5): ", (choice) => {
+        let tagToRun = "";
+        switch (choice.trim()) {
+            case "1": tagToRun = "@TC02_01"; break;
+            case "2": tagToRun = "@TC02_02"; break;
+            case "3": tagToRun = "@TC02_03"; break;
+            case "4": tagToRun = "@TC02_04"; break;
+            case "5": tagToRun = "@TC02_05"; break;
+            case "0": return askMenu();
+            default:
+                console.log("Lựa chọn không hợp lệ!");
+                return askSubMenuUC02();
+        }
+        runCucumberTest(tagToRun);
+    });
+}
+
 // HÀM HIỂN THỊ MENU CON CHO UC03 (Của Hiệp)
 function askSubMenuUC03() {
     console.log("\n=============================================");
@@ -98,6 +128,36 @@ function askSubMenuUC03() {
             default:
                 console.log("Lựa chọn không hợp lệ!");
                 return askSubMenuUC03();
+        }
+        runCucumberTest(tagToRun);
+    });
+}
+
+// HÀM HIỂN THỊ MENU CON CHO UC04 (MỚI THÊM)
+function askSubMenuUC04() {
+    console.log("\n=============================================");
+    console.log("   SUB-MENU: CHỨC NĂNG CẬP NHẬT ISSUE (UC04)");
+    console.log("=============================================");
+    console.log(" 1. [Fail] Báo lỗi Story Point sai định dạng (TC01)");
+    console.log(" 2. [Success] Sửa Summary, Status, Story Point (TC02)");
+    console.log(" 3. [Success] Sửa Description, Label, Assignee (TC03)");
+    console.log(" 4. [Success] Tạo Subtask mới từ Issue (TC04)");
+    console.log(" 5. [Fail] Báo lỗi khi xóa trắng Summary (TC05)");
+    console.log(" 0. Quay lại menu chính");
+    console.log("---------------------------------------------");
+
+    rl.question("Nhập test case bạn muốn chạy (0-5): ", (choice) => {
+        let tagToRun = "";
+        switch (choice.trim()) {
+            case "1": tagToRun = "@TC04_01"; break;
+            case "2": tagToRun = "@TC04_02"; break;
+            case "3": tagToRun = "@TC04_03"; break;
+            case "4": tagToRun = "@TC04_04"; break;
+            case "5": tagToRun = "@TC04_05"; break;
+            case "0": return askMenu();
+            default:
+                console.log("Lựa chọn không hợp lệ!");
+                return askSubMenuUC04();
         }
         runCucumberTest(tagToRun);
     });
