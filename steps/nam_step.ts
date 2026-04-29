@@ -1,7 +1,10 @@
-import { When, Then } from '@cucumber/cucumber';
+import { Given, When, Then } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
 import { page, sharedData } from './common_step'; 
 import * as fs from 'fs';
 
+
+const SHARED_DATA_FILE = 'project_key.json';
 // ==========================================
 // 1. AUTO-HEALING ĐĂNG NHẬP (Chống lật lọng)
 // ==========================================
@@ -234,4 +237,224 @@ Then('Hệ thống phải hiển thị lỗi Key không hợp lệ', async funct
     const errorMsg = page.getByText(/Project keys must start with an uppercase letter/i).first();
     await errorMsg.waitFor({ state: 'visible', timeout: 10000 });
     console.log("\n[Terminal] ✅ KẾT QUẢ: Kịch bản Fail (TC05) chạy ĐÚNG - Đã chặn Key sai định dạng!");
+});
+
+
+// =====================================================================
+// PHẦN 2: ADD PEOPLE - TÍCH HỢP DATA-TESTID BẠN CUNG CẤP
+// =====================================================================
+
+Given('Tôi đã ở trong Space vừa tạo', async function () {
+    const baseUrl = process.env.JIRA_BASE_URL || 'https://our-testing.atlassian.net';
+    if (!fs.existsSync(SHARED_DATA_FILE)) throw new Error("File key dự án không tồn tại!");
+    
+    const data = JSON.parse(fs.readFileSync(SHARED_DATA_FILE, 'utf8'));
+    const key = data.projectKey;
+    const projectUrl = `${baseUrl}/projects/${key}`;
+
+    await page.goto(projectUrl, { waitUntil: 'load' });
+    await page.waitForTimeout(3000);
+
+    // Xử lý tự động đăng nhập (SSO/Redirect) nếu Jira chặn
+    if (page.url().includes('login') || page.url().includes('auth') || page.url().includes('id.atlassian.com')) {
+        console.log("\n=> ⚠️ Jira bắt đăng nhập lại. Đang xử lý...");
+        const email = process.env.JIRA_EMAIL || "";
+        const password = process.env.JIRA_PASSWORD || "";
+        
+        const emailInput = page.locator('#username, input[type="email"]').first();
+        if (await emailInput.isVisible({ timeout: 5000 }).catch(() => false)) {
+            await emailInput.fill(email);
+            await page.locator('#login-submit, button:has-text("Continue")').first().click();
+        }
+
+        await page.waitForTimeout(4000);
+
+        try {
+            const passInput = page.locator('#password, input[type="password"]').first();
+            await passInput.waitFor({ state: 'visible', timeout: 10000 });
+            await passInput.fill(password);
+            await page.locator('#login-submit, button:has-text("Log in")').first().click();
+        } catch (e) {
+            console.log("=> ℹ️ Có thể Jira đang dùng SSO, không cần nhập pass...");
+        }
+        
+        try {
+            await page.waitForURL(/.*(jira|for-you|projects).*/, { timeout: 30000 });
+        } catch (e) {}
+        
+        await page.goto(projectUrl, { waitUntil: 'load' });
+    }
+
+    // FIX LỖI 20s: Bắt thẻ nav chung để tránh Jira đổi cấu trúc HTML
+    try {
+        await page.waitForSelector('nav, div[role="navigation"]', { timeout: 15000 });
+    } catch (e) {
+        console.log("=> Bỏ qua lỗi bắt Sidebar, chạy theo thời gian...");
+    }
+    
+    await page.waitForTimeout(3000);
+    console.log(`=> ✅ Đã vào thành công Space: ${key}`);
+});
+
+When('Tôi bấm nút {string} trên màn hình', async function (btnName: string) {
+    await page.waitForTimeout(3000); 
+    
+    let btnLocator;
+    
+    // TÍCH HỢP DATA-TESTID siêu việt của Nam vào đây
+    if (btnName === "Add people") {
+        btnLocator = page.locator('[data-testid="invite-people.ui.navigation-add-people-button.trigger"]').first();
+    } else {
+        // Fallback cho các nút khác
+        btnLocator = page.locator(`button:has-text("${btnName}"), span:has-text("${btnName}"), button[aria-label*="${btnName}" i], button[title*="${btnName}" i]`).first();
+    }
+    
+    await btnLocator.waitFor({ state: 'visible', timeout: 15000 });
+    await btnLocator.click();
+    
+    console.log(`=> Đã bấm nút: ${btnName}`);
+});
+
+When('Tôi nhập email thành viên là {string}', async function (email: string) {
+    const emailInput = page.locator('div[role="dialog"] input[type="text"], input[id*="react-select"]').first();
+    await emailInput.waitFor({ state: 'visible' });
+    await emailInput.fill(email);
+    
+    await page.waitForTimeout(2000); 
+    await page.keyboard.press('Enter');
+});
+
+When('Tôi bấm xác nhận thêm người', async function () {
+    await page.locator('div[role="dialog"] button:has-text("Add")').first().click();
+});
+
+Then('Hệ thống thông báo thành viên mới đã được thêm thành công', async function () {
+    try {
+        const toastMsg = page.locator('text=has been added').first();
+        await toastMsg.waitFor({ state: 'visible', timeout: 10000 });
+        console.log("=> ✅ Thành công!");
+    } catch (e) {
+        const dialog = page.locator('div[role="dialog"]').first();
+        await expect(dialog).toBeHidden({ timeout: 5000 });
+        console.log("=> ✅ Thành công (Hộp thoại đã đóng)!");
+    }
+});
+
+// =====================================================================
+// BỔ SUNG: CÁC STEPS CHO TC2, TC3, TC4, TC5 (ADD PEOPLE)
+// =====================================================================
+
+// -----------------------------------------------------------
+// TC2: GÕ CHỮ SAI ĐỊNH DẠNG VÀ CLICK RA NGOÀI ĐỂ BỎ FOCUS
+// -----------------------------------------------------------
+When('Tôi gõ chuỗi sai định dạng {string} vào ô email', async function (invalidText: string) {
+    const emailInput = page.locator('div[role="dialog"] input[type="text"], input[id*="react-select"]').first();
+    await emailInput.waitFor({ state: 'visible', timeout: 5000 });
+    
+    await emailInput.focus();
+    await page.keyboard.press('Control+A');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.type(invalidText, { delay: 100 });
+    
+    await page.waitForTimeout(1000);
+
+    // Bỏ focus để Jira ngừng gợi ý
+    const modalTitle = page.locator('div[role="dialog"] h1, div[role="dialog"] h2').first();
+    await modalTitle.click({ force: true });
+    
+    await page.waitForTimeout(500);
+    console.log(`=> ℹ️ Đã gõ chuỗi "${invalidText}" và click ra ngoài để bỏ focus.`);
+});
+
+// -----------------------------------------------------------
+// TC3: CỐ TÌNH BÔI ĐEN, XÓA SẠCH Ô EMAIL VÀ BỎ FOCUS
+// -----------------------------------------------------------
+When('Tôi để trống ô nhập email', async function () {
+    const emailInput = page.locator('div[role="dialog"] input[type="text"], input[id*="react-select"]').first();
+    await emailInput.waitFor({ state: 'visible', timeout: 5000 });
+    
+    await emailInput.focus();
+    await page.keyboard.press('Control+A');
+    await page.keyboard.press('Backspace');
+    
+    await page.waitForTimeout(500);
+
+    // BỔ SUNG: Click ra ngoài giống TC2 để ép Jira ghi nhận trạng thái rỗng
+    const modalTitle = page.locator('div[role="dialog"] h1, div[role="dialog"] h2').first();
+    await modalTitle.click({ force: true });
+
+    console.log("=> ℹ️ Đã để trống trường nhập email và click ra ngoài.");
+});
+
+// -----------------------------------------------------------
+// FIX LỖI TC2 & TC3 CHỐT HẠ: BẮT ĐÍCH DANH TEXT ĐANG HIỂN THỊ
+// -----------------------------------------------------------
+Then('Hệ thống phải hiển thị cảnh báo lỗi thêm thành viên', async function () {
+    // 1. Ép form văng lỗi bằng phím Tab
+    const emailInput = page.locator('div[role="dialog"] input[type="text"], input[id*="react-select"]').first();
+    if (await emailInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await emailInput.focus();
+        await page.keyboard.press('Tab'); 
+        await page.waitForTimeout(500);
+    }
+
+    // 2. Click nút Add
+    const addBtn = page.locator('div[role="dialog"] button:has-text("Add"), div[role="dialog"] button[type="submit"]').first();
+    await addBtn.click({ force: true }).catch(() => console.log("=> ℹ️ Nút Add đang bị khóa."));
+
+    // 3. Chờ Jira render lỗi
+    await page.waitForTimeout(1000); 
+
+    // 4. CHÌA KHÓA: Chỉ tìm bằng đoạn Text thật sự nhìn thấy trên màn hình (Bỏ qua các thẻ HTML ẩn)
+    // Dùng Regex /.../i để bắt chính xác nội dung bất kể viết hoa hay thường
+    const errorText = page.locator('div[role="dialog"]').getByText(/Select at least one person|Enter a valid email/i).first();
+    
+    try {
+        // expect().toBeVisible() sẽ ép Playwright xác nhận dòng chữ này ĐANG HIỂN THỊ THẬT SỰ
+        await expect(errorText).toBeVisible({ timeout: 5000 });
+        console.log("=> ✅ KẾT QUẢ: Robot ĐÃ NHÌN THẤY chữ đỏ báo lỗi trên Popup UI.");
+    } catch (error) {
+        throw new Error("❌ BUG: Playwright không đọc được chữ! (Xem ảnh bug_tc2_cuoi_cung.png)");
+    }
+});
+
+// -----------------------------------------------------------
+// FIX LỖI TC4: BẮT ĐÚNG THUỘC TÍNH PLACEHOLDER VÀ BUTTON MỚI
+// -----------------------------------------------------------
+Then('Hệ thống hiển thị gợi ý người dùng có sẵn thay vì tạo lời mời mới', async function () {
+    // Chờ 1 giây để Jira render xong cái Thẻ (Pill) Nam Đỗ Gia sau khi bấm Enter
+    await page.waitForTimeout(1000);
+
+    // 1. Dấu hiệu 1: Ô input đổi placeholder thành "add more people..."
+    const inputPlaceholder = page.locator('input[placeholder*="add more people"]').first();
+    
+    // 2. Dấu hiệu 2: Nút xanh dưới cùng đổi tên thành "Add 1 person" (bắt không phân biệt hoa thường)
+    const add1PersonBtn = page.locator('button').filter({ hasText: /Add 1 person/i }).first();
+
+    // 3. Dấu hiệu 3: Xuất hiện cái Thẻ (Pill) chứa tên bạn
+    const userPill = page.locator('div[role="dialog"] button[aria-label*="Remove"], [data-testid*="tag"]').first();
+    
+    try {
+        // Chỉ cần 1 trong 3 dấu hiệu này sáng lên là TC4 Pass!
+        if (await inputPlaceholder.isVisible({ timeout: 2000 }) || 
+            await add1PersonBtn.isVisible({ timeout: 2000 }) || 
+            await userPill.isVisible({ timeout: 2000 })) {
+            console.log("=> ✅ KẾT QUẢ: Hệ thống đã nhận diện email thành Thẻ người dùng (Pill) thành công.");
+        } else {
+            throw new Error("Không thấy dấu hiệu nào");
+        }
+    } catch (error) {
+        // Vẫn giữ lại camera đề phòng bất trắc
+        await page.screenshot({ path: 'bug_tc4_truy_vet.png', fullPage: true });
+        throw new Error("❌ BUG: Playwright tìm không thấy dấu hiệu người dùng cũ!");
+    }
+});
+
+// -----------------------------------------------------------
+// TC5: KIỂM TRA HỘP THOẠI CANCEL ĐÃ ĐÓNG
+// -----------------------------------------------------------
+Then('Hộp thoại Add people phải được đóng lại', async function () {
+    const dialog = page.locator('div[role="dialog"]:has-text("Add people to Jira"), [aria-label="Add people to Jira"]').first();
+    await expect(dialog).toBeHidden({ timeout: 5000 });
+    console.log("=> ✅ KẾT QUẢ: Hộp thoại mời thành viên đã đóng an toàn.");
 });
