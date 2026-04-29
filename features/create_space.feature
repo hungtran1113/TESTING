@@ -35,12 +35,12 @@ Feature: Chức năng Tạo mới Không gian làm việc - Space (Thành viên 
     Then Hệ thống chuyển hướng vào trang chi tiết của Space mới
 
   @TC04
-  Scenario: TC04 (Fail) - Báo lỗi khi để trống Tên dự án
+  Scenario: TC04 (Fail) - Báo lỗi khi để trống Name, Manage, Key
     When Tôi truy cập vào trang chủ Jira
     And Tôi nhấn nút dấu cộng tạo Space trên menu
     And Tôi chọn template "Scrum"
-    And Tôi để trống ô Tên dự án
-    Then Hệ thống phải hiển thị lỗi yêu cầu nhập Tên dự án
+    And Tôi để trống ô Name, Manage, Key
+    Then Hệ thống phải hiển thị lỗi yêu cầu nhập Name, Manage, Key
 
   @TC05
   Scenario: TC05 (Fail) - Báo lỗi khi nhập Key dự án có chứa ký tự đặc biệt

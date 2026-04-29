@@ -183,7 +183,7 @@ Then('Hệ thống chuyển hướng vào trang chi tiết của Space mới', a
 // ==========================================
 // 5. CÁC BƯỚC CHO TEST CASE FAIL (TC04 & TC05)
 // ==========================================
-When('Tôi để trống ô Tên dự án', async function () {
+When('Tôi để trống ô Name, Manage, Key', async function () {
     const nameInputSelectors = 'input[id*="project-create.create-form.name-field"], input[name="project-name"], input[id*="name"], input[placeholder*="team name"]';
     const nameInput = page.locator(nameInputSelectors).first();
     await nameInput.waitFor({ state: 'visible', timeout: 20000 });
@@ -191,13 +191,13 @@ When('Tôi để trống ô Tên dự án', async function () {
     await nameInput.click();
     await nameInput.fill('');
     await nameInput.press('Tab');
-    console.log("[Terminal] ⚠️ Đã để trống Tên dự án.");
+    console.log("[Terminal] ⚠️ Đã để trống ô Name, Manage, Key.");
 
     const nextBtn = page.locator('button:has-text("Next"), [data-testid="create-form-wizard.ui.common.ui.form-footer.submit-button"]').first();
     await nextBtn.click({ force: true });
 });
 
-Then('Hệ thống phải hiển thị lỗi yêu cầu nhập Tên dự án', async function () {
+Then('Hệ thống phải hiển thị lỗi yêu cầu nhập Name, Manage, Key', async function () {
     const nameError = page.getByText(/Your new project needs a name/i).first();
     await nameError.waitFor({ state: 'visible', timeout: 10000 });
 
