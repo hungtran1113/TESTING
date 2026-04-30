@@ -73,7 +73,7 @@ dotenv.config();
         await context.storageState({ path: 'state.json' });
         console.log("--------------------------------------------------");
         console.log("THÀNH CÔNG: Đã lưu trạng thái đăng nhập vào state.json");
-        console.log("Giờ bạn có thể chạy 'npm test' mà không cần đăng nhập lại.");
+        console.log("Giờ bạn có thể chạy 'npm run runner' mà không cần đăng nhập lại.");
         console.log("--------------------------------------------------");
 
     } catch (error) {

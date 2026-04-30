@@ -11,10 +11,11 @@ Feature: Phân quyền thành viên
     And Tôi nhập email thành viên là "dogianam158@gmail.com"
     And Tôi bấm xác nhận thêm người
     Then Hệ thống thông báo thành viên mới đã được thêm thành công
+    
   @TC02_02
   Scenario: TC2 - Nhập email sai định dạng
     When Tôi bấm nút "Add people" trên màn hình
-    And Tôi gõ chuỗi sai định dạng "chuoi_linh_tinh_khong_hop_le" vào ô email
+    And Tôi gõ chuỗi sai định dạng "abc@xyz" vào ô email
     Then Hệ thống phải hiển thị cảnh báo lỗi thêm thành viên
   
   @TC02_03
@@ -23,7 +24,7 @@ Feature: Phân quyền thành viên
     And Tôi để trống ô nhập email
     Then Hệ thống phải hiển thị cảnh báo lỗi thêm thành viên
 
-  @TC02_04
+  @TC02_04 @no-retry
   Scenario: TC4 - Thêm thành viên đã tồn tại trong dự án
     When Tôi bấm nút "Add people" trên màn hình
     And Tôi nhập email thành viên là "dogianam158@gmail.com"

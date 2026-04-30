@@ -15,8 +15,8 @@ function askMenu() {
     console.log("2. UC02 - Mời thành viên (Add People)    [CÓ SUB-MENU]");
     console.log("3. UC03 - Tạo mới Issue (Create Issue)   [CÓ SUB-MENU]");
     console.log("4. UC04 - Cập nhật Issue (Edit Issue)    [CÓ SUB-MENU]");
-    console.log("5. UC05 - Tạo Sprint mới (Create Sprint)");
-    console.log("6. UC06 - Viết bình luận (Add Comment)");
+    console.log("5. UC05 - Tạo Sprint mới (Create Sprint) [CÓ SUB-MENU]");
+    console.log("6. UC06 - Viết bình luận (Add Comment)   [CÓ SUB-MENU]");
     console.log("7. Chạy TẤT CẢ các chức năng trên");
     console.log("0. Thoát chương trình");
     console.log("=========================================");
@@ -27,8 +27,8 @@ function askMenu() {
             case "2": return askSubMenuUC02(); // Đã sửa để gọi Sub-menu
             case "3": return askSubMenuUC03();
             case "4": return askSubMenuUC04(); // Đã sửa để gọi Sub-menu
-            case "5": return runCucumberTest("@UC05");
-            case "6": return runCucumberTest("@UC06");
+            case "5": return askSubMenuUC05();
+            case "6": return askSubMenuUC06();
             case "7": return runCucumberTest("ALL");
             case "0":
                 console.log("Đang tắt hệ thống kiểm thử. Tạm biệt!");
@@ -163,6 +163,58 @@ function askSubMenuUC04() {
     });
 }
 
+// HÀM HIỂN THỊ MENU CON CHO UC05 (SPRINT)
+function askSubMenuUC05() {
+    console.log("\n=============================================");
+    console.log("   SUB-MENU: QUẢN LÝ SPRINT (UC05)");
+    console.log("=============================================");
+    console.log(" 1. [Happy Path] Tạo Sprint thành công (TC01)");
+    console.log(" 2. [Negative] Báo lỗi khi tên Sprint rỗng (TC02)");
+    console.log(" 3. [Logic] Lỗi logic thời gian không hợp lệ (TC03)");
+    console.log(" 0. Quay lại menu chính");
+    console.log("---------------------------------------------");
+
+    rl.question("Nhập test case bạn muốn chạy (0-3): ", (choice) => {
+        let tagToRun = "";
+        switch (choice.trim()) {
+            case "1": tagToRun = "@TC_SPR_01"; break;
+            case "2": tagToRun = "@TC_SPR_02"; break;
+            case "3": tagToRun = "@TC_SPR_03"; break;
+            case "0": return askMenu();
+            default:
+                console.log("Lựa chọn không hợp lệ!");
+                return askSubMenuUC05();
+        }
+        runCucumberTest(tagToRun);
+    });
+}
+
+// HÀM HIỂN THỊ MENU CON CHO UC06 (COMMENT)
+function askSubMenuUC06() {
+    console.log("\n=============================================");
+    console.log("   SUB-MENU: QUẢN LÝ BÌNH LUẬN (UC06)");
+    console.log("=============================================");
+    console.log(" 1. [Happy Path] Bình luận hiển thị 'Just now' (TC01)");
+    console.log(" 2. [Negative] Nút Save bị vô hiệu hóa (TC02)");
+    console.log(" 3. [Negative] Không gợi ý tên không tồn tại (TC03)");
+    console.log(" 0. Quay lại menu chính");
+    console.log("---------------------------------------------");
+
+    rl.question("Nhập test case bạn muốn chạy (0-3): ", (choice) => {
+        let tagToRun = "";
+        switch (choice.trim()) {
+            case "1": tagToRun = "@TC_CMT_01"; break;
+            case "2": tagToRun = "@TC_CMT_02"; break;
+            case "3": tagToRun = "@TC_CMT_03"; break;
+            case "0": return askMenu();
+            default:
+                console.log("Lựa chọn không hợp lệ!");
+                return askSubMenuUC06();
+        }
+        runCucumberTest(tagToRun);
+    });
+}
+
 // HÀM THỰC THI LỆNH CUCUMBER (Dùng chung cho cả Menu chính và Sub-Menu)
 // HÀM THỰC THI LỆNH CUCUMBER
 function runCucumberTest(tagToRun) {
@@ -178,7 +230,8 @@ function runCucumberTest(tagToRun) {
         // MỚI THÊM: CƠ CHẾ TỰ ĐỘNG CHẠY LẠI (AUTO-RETRY)
         // Nếu Testcase thất bại, nó sẽ tự động chạy lại tối đa 2 lần. 
         // Chỉ khi nào cả 3 lần đều thất bại thì nó mới báo ĐỎ.
-        '--retry', '2' 
+        '--retry', '2',
+        '--retry-tag-filter', '"not @no-retry"'
     ];
 
     if (tagToRun !== "ALL") {
