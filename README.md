@@ -30,6 +30,8 @@ Hệ thống sẽ hiển thị một Menu tương tác trực tiếp trên Termi
 
 Thầy/Cô chỉ cần nhập số tương ứng trên bàn phím để chọn các Use Case (UC) hoặc Test Case (TC) chi tiết muốn chạy. Robot sẽ tự động mở trang và thực thi kịch bản.
 
+- ### **Lưu ý:** Để giảm thiểu sai số do đường truyền mạng hoặc sự chậm trễ của Jira UI, kịch bản test được thiết lập tự động chạy lại (retry) tối đa 2 lần đối với các case gặp lỗi. (Ngoại trừ các Test Case được chủ đích bắt Bug như TC04 sẽ chỉ chạy 1 lần). Thầy/cô vui lòng đợi chương trình chạy hết chu kỳ để ghi nhận kết quả chính xác nhất.
+
 ---
 # ⚠️ CÁC LỖI THƯỜNG GẶP KHI CLONE CODE (TROUBLESHOOTING)
 
