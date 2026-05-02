@@ -5,16 +5,13 @@ import * as fs from 'fs';
 
 
 const SHARED_DATA_FILE = 'project_key.json';
-// ==========================================
-// 1. AUTO-HEALING ĐĂNG NHẬP (Chống lật lọng)
-// ==========================================
+
 When('Tôi truy cập vào trang chủ Jira', async function () {
     const baseUrl = process.env.JIRA_BASE_URL || 'https://our-testing.atlassian.net';
     await page.goto(`${baseUrl}/jira/your-work`, { waitUntil: 'domcontentloaded' });
     
     await page.waitForTimeout(5000); 
 
-    // SIÊU CHIẾN THUẬT: TÌM BẰNG CHỨNG ĐĂNG NHẬP
     // Kiểm tra xem thanh Menu chính của Jira có load được không
     const isLoggedIn = await page.locator('nav[aria-label="Primary"], button:has-text("Create"), [data-testid="atlassian-navigation--primary-actions"]').first().isVisible({ timeout: 5000 }).catch(() => false);
 
@@ -25,7 +22,6 @@ When('Tôi truy cập vào trang chủ Jira', async function () {
         await page.waitForTimeout(3000);
     }
 
-    // KÍCH HOẠT AUTO-HEALING ĐĂNG NHẬP
     if (page.url().includes('login') || page.url().includes('auth') || page.url().includes('id.atlassian.com')) {
         console.log("\n=> ⚠️ Robot đang tự động đăng nhập lại...");
         const email = process.env.JIRA_EMAIL || "";
@@ -81,7 +77,6 @@ When('Tôi chọn template {string}', async function (templateName: string) {
     // 1. BẮT BUỘC CLICK VÀO DANH MỤC "Software development"
     console.log("[Terminal] Đang tìm và click danh mục 'Software development'...");
     
-    // Dựa vào HTML bạn cung cấp: dùng thẻ span có data-item-title="true" cực kỳ chắc chắn
     const categoryBtn = page.locator('span[data-item-title="true"]:has-text("Software development"), button:has-text("Software development")').first();
     
     // Ép robot phải đợi và click bằng được danh mục này
@@ -95,7 +90,6 @@ When('Tôi chọn template {string}', async function (templateName: string) {
     // 2. TÌM VÀ CLICK VÀO THẺ TEMPLATE 
     console.log(`[Terminal] Đang tìm thẻ Template: ${templateName}...`);
     
-    // Dựa vào HTML bạn cung cấp: Tên template nằm trong thẻ h3 > span
     const templateTargets = page.locator('h3, span').filter({ hasText: new RegExp(`^${templateName}$`, 'i') });
 
     try {
@@ -104,7 +98,6 @@ When('Tôi chọn template {string}', async function (templateName: string) {
         await templateTargets.first().click({ force: true });
         console.log(`[Terminal] 🃏 Đã nhấn chọn thẻ Template: ${templateName}`);
     } catch (e) {
-        // Cứu cánh cuối cùng
         console.log(`=> ⚠️ Đang thử click mù vào chữ ${templateName}...`);
         await page.locator(`text="${templateName}"`).last().click({ force: true });
     }
@@ -254,16 +247,13 @@ Given('Tôi đã ở trong Space vừa tạo', async function () {
 
     console.log(`=> ℹ️ Đang điều hướng đến Space: ${key}`);
 
-    // CHỈNH SỬA TẠI ĐÂY: 
-    // 1. Dùng 'domcontentloaded' thay vì 'load' (chỉ đợi khung HTML xong là chạy)
-    // 2. Thêm timeout ngắn lại để nếu kẹt nó sẽ nhảy qua xử lý login ngay
     try {
         await page.goto(projectUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
     } catch (e) {
         console.log("=> ⚠️ Trang tải hơi chậm, đang kiểm tra trạng thái login...");
     }
 
-    // Xử lý tự động đăng nhập (Giữ nguyên logic của bạn nhưng bọc trong try-catch an toàn)
+    // Xử lý tự động đăng nhập 
     if (page.url().includes('login') || page.url().includes('auth') || page.url().includes('id.atlassian.com')) {
         const email = process.env.JIRA_EMAIL || "";
         const password = process.env.JIRA_PASSWORD || "";
@@ -288,7 +278,6 @@ Given('Tôi đã ở trong Space vừa tạo', async function () {
     }
 
     // QUAN TRỌNG: Thay vì đợi Selector lâu, ta đợi một phần tử "sống" của Jira hiện lên
-    // Bắt thẻ [data-testid="ContextualNavigation"] hoặc Sidebar
     const sidebar = page.locator('nav, [data-testid="left-sidebar-container"], #jira-frontend').first();
     try {
         await sidebar.waitFor({ state: 'attached', timeout: 15000 });
@@ -303,11 +292,9 @@ When('Tôi bấm nút {string} trên màn hình', async function (btnName: strin
     
     let btnLocator;
     
-    // TÍCH HỢP DATA-TESTID siêu việt của Nam vào đây
     if (btnName === "Add people") {
         btnLocator = page.locator('[data-testid="invite-people.ui.navigation-add-people-button.trigger"]').first();
     } else {
-        // Fallback cho các nút khác
         btnLocator = page.locator(`button:has-text("${btnName}"), span:has-text("${btnName}"), button[aria-label*="${btnName}" i], button[title*="${btnName}" i]`).first();
     }
     
@@ -410,7 +397,7 @@ Then('Hệ thống phải hiển thị cảnh báo lỗi thêm thành viên', as
 
     await page.waitForTimeout(1000); 
 
-    // 2. CHÌA KHÓA: Tìm đoạn Text lỗi hiển thị trên màn hình (Giữ nguyên logic cực xịn của bạn)
+    // 2. CHÌA KHÓA: Tìm đoạn Text lỗi hiển thị trên màn hình
     const errorText = page.locator('div[role="dialog"]').getByText(/Select at least one person|Enter a valid email/i).first();
     
     try {
@@ -443,7 +430,6 @@ Then('Hệ thống hiển thị gợi ý người dùng có sẵn thay vì tạo
     if (await toastNotification.isVisible({ timeout: 4000 }).catch(() => false)) {
         const text = await toastNotification.innerText();
         
-        // KIỂM TRA NGẶT NGHÈO (CÁCH 1): 
         // Nếu thông báo chứa chữ "added" hoặc "thành công" -> ĐÁNH FAIL NGAY LẬP TỨC!
         if (/added|thành công/i.test(text)) {
             

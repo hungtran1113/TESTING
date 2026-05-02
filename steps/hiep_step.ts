@@ -1,9 +1,12 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
-import { page, getDynamicProjectUrl } from './common_step'; // Import page và hàm lấy URL
+import { page, getDynamicProjectUrl } from './common_step'; 
 import * as fs from 'fs';
 
-// --- AUTO-HEALING ĐĂNG NHẬP (Giữ nguyên logic ổn định của bạn) ---
+// =====================================================================
+// PHẦN 1: CREATE ISSUE 
+// =====================================================================
+
 Given('Tôi truy cập vào trang dự án Jira của nhóm', async function () {
     const targetUrl = getDynamicProjectUrl("/summary"); 
     await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
@@ -44,11 +47,10 @@ Given('Tôi truy cập vào trang dự án Jira của nhóm', async function () 
     }
 });
 
-// --- CẢI TIẾN: HỖ TRỢ 2 LOẠI NÚT CREATE TRÊN THANH ĐIỀU HƯỚNG ---
+// HỖ TRỢ 2 LOẠI NÚT CREATE TRÊN THANH ĐIỀU HƯỚNG ---
 When('Tôi nhấn nút Create trên thanh điều hướng', async function () {
     await page.waitForTimeout(2000);
 
-    // Bao lưới 2 loại nút Create bạn cung cấp (Navbar button và Modal footer button phòng khi nó đã mở)
     const navCreateBtn = page.locator('[data-testid="atlassian-navigation--create-button"], #createGlobalItem');
     const footerCreateBtn = page.locator('[data-testid="issue-create.common.ui.footer.create-button"]');
 
@@ -74,8 +76,7 @@ When('Tôi nhấn nút Create trên thanh điều hướng', async function () {
     }
 });
 
-// --- CẢI TIẾN: HỖ TRỢ 2 CÁCH NHẬP INPUT SUMMARY ---
-// Sử dụng chính xác data-testid bạn cung cấp
+// HỖ TRỢ 2 CÁCH NHẬP INPUT SUMMARY ---
 const summarySelectors = [
     'input[data-testid="issue-create-commons.common.ui.fields.base-fields.input-field.textfield"]',
     'input#summary-field',
@@ -111,9 +112,8 @@ When('Tôi nhập Summary vượt quá 255 ký tự', async function () {
     await summaryInput.fill(longText);
 });
 
-// --- CẢI TIẾN: HỖ TRỢ NÚT XÁC NHẬN CREATE TRÊN FORM ---
+// HỖ TRỢ NÚT XÁC NHẬN CREATE TRÊN FORM ---
 When('Tôi nhấn nút xác nhận Create trên form', async function () {
-    // Dùng chính xác HTML data-testid bạn gửi: issue-create.common.ui.footer.create-button
     const submitBtn = page.locator('[data-testid="issue-create.common.ui.footer.create-button"], button[type="submit"]:has-text("Create")').last();
     
     await submitBtn.waitFor({ state: 'visible', timeout: 10000 });
@@ -143,7 +143,7 @@ Then('Hệ thống phải hiển thị cảnh báo lỗi {string}', async functi
 });
 
 // =====================================================================
-// PHẦN 2: EDIT ISSUE (BỔ SUNG AUTO-LOGIN VÀ CÁC TRƯỜNG MỞ RỘNG)
+// PHẦN 2: EDIT ISSUE 
 // =====================================================================
 
 Given('Tôi đang xem chi tiết một Issue hiện có', async function () {
@@ -295,12 +295,7 @@ Then('Hệ thống phải báo lỗi định dạng số không hợp lệ', asy
     }
 });
 
-// -----------------------------------------------------------
-// 2. CÁC BƯỚC EDIT MỞ RỘNG (LOCATOR CHUẨN TỪ BẠN)
-// -----------------------------------------------------------
-// -----------------------------------------------------------
-// CHỐT HẠ LỖI CUỐI CÙNG: CẬP NHẬT DESCRIPTION
-// -----------------------------------------------------------
+
 When('Tôi cập nhật Description thành {string}', async function (desc: string) {
     console.log("=> Đang tìm và mở khung Description...");
     await page.waitForTimeout(2000); // Đợi UI load xong trạng thái
@@ -353,7 +348,7 @@ When('Tôi gán Issue cho Assignee là {string}', async function (userName: stri
     await page.waitForTimeout(2000); // Đợi Jira search dữ liệu
     await page.keyboard.press('Enter');
 
-    // BỌC LÓT: Xử lý cái popup "Add people to Jira" (Nếu email chưa tồn tại)
+    // Xử lý cái popup "Add people to Jira" (Nếu email chưa tồn tại)
     const addPeopleModal = page.locator('div[role="dialog"]:has-text("Add people to Jira"), [aria-label="Add people to Jira"]').first();
     if (await addPeopleModal.isVisible({ timeout: 2000 }).catch(() => false)) {
         console.log(`=> ⚠️ Email "${userName}" chưa có trong dự án. Jira đòi Invite. Đang tự động Cancel...`);
@@ -381,7 +376,7 @@ When('Tôi thêm Label là {string}', async function (labelName: string) {
 });
 
 // -----------------------------------------------------------
-// 3. CÁC BƯỚC EDIT SUMMARY, STATUS (ĐÃ XÓA BỎ PRIORITY)
+// 3. CÁC BƯỚC EDIT SUMMARY, STATUS 
 // -----------------------------------------------------------
 When('Tôi đổi tiêu đề Summary thành {string}', async function (newSummary: string) {
     const summaryHeading = page.locator('h1[data-testid*="summary"], h1[aria-label*="Summary"], h1').first();
@@ -409,7 +404,6 @@ When('Tôi đổi Trạng thái thành {string}', async function (status: string
 // 4. BỔ SUNG: TẠO SUBTASK (CHỈNH SỬA TẠI ĐÂY ĐỂ TRÁNH LỖI TIMEOUT)
 // -----------------------------------------------------------
 When('Tôi tạo một Subtask với tiêu đề {string}', async function (title: string) {
-    // [ĐÃ SỬA LỖI TẠI ĐÂY] - Dùng chính xác tên nút "Add subtask" theo HTML bạn gửi
     const addSubtaskBtn = page.locator('button:has-text("Add subtask")').first();
     
     if (await addSubtaskBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
@@ -420,7 +414,6 @@ When('Tôi tạo một Subtask với tiêu đề {string}', async function (titl
     await summaryInput.waitFor({ state: 'visible', timeout: 15000 });
     await summaryInput.fill(title);
     
-    // [ĐÃ SỬA LỖI TẠI ĐÂY] - Bấm vào nút Create cụ thể bạn đã cung cấp thay vì bấm Enter
     const submitBtn = page.locator('button[data-testid="issue.views.common.child-issues-panel.inline-create.add-child-trigger-button"]').first();
     await submitBtn.click();
     
